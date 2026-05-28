@@ -53,15 +53,6 @@ html, body, [class*="css"] {
     margin-bottom: 35px;
 }
 
-/* العناوين الفرعية */
-.section-title {
-    font-size: 34px;
-    font-weight: bold;
-    margin-top: 25px;
-    margin-bottom: 10px;
-    color: #2b2d42;
-}
-
 /* النص العربي */
 .arabic-text {
     direction: rtl;
@@ -346,7 +337,10 @@ if uploaded_files:
 
             st.markdown(result, unsafe_allow_html=True)
 
-       except Exception as e:
-    st.error("حدث خطأ مؤقت أثناء التحليل. حاول مرة أخرى لاحقًا. | Temporary analysis error. Please try again later.")
-    st.code(str(e))
-        
+        except Exception as e:
+
+            st.error(
+                "حدث خطأ مؤقت أثناء التحليل. حاول مرة أخرى لاحقًا. | Temporary analysis error. Please try again later."
+            )
+
+            st.code(str(e))
