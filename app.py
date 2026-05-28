@@ -106,19 +106,22 @@ model = genai.GenerativeModel(
     system_instruction=SYSTEM_PROMPT
 )
 
-uploaded_file = st.file_uploader(
-    "Upload product image",
-    type=["jpg", "jpeg", "png"]
+uploaded_files = st.file_uploader(
+    "Upload product images",
+    type=["jpg", "jpeg", "png"],
+    accept_multiple_files=True
 )
 
-if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+if uploaded_files:
+    images = [Image.open(file) for file in uploaded_files]
+
+    for i, image in enumerate(images, start=1):
+        st.image(image, caption=f"Uploaded Image {i}", use_container_width=True)
 
     with st.spinner("Analyzing product..."):
-        response = model.generate_content([
-            "Analyze this product for celiac safety. حلل هذا المنتج لمريض سيلياك.",
-            image
-        ])
+        content = ["Analyze these product images together for celiac safety. حلل هذه الصور معًا لنفس المنتج لمريض سيلياك."]
+        content.extend(images)
+
+        response = model.generate_content(content)
 
     st.markdown(response.text)
