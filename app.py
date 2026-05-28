@@ -176,8 +176,9 @@ Users are responsible for final decisions and should always verify official labe
 # =========================
 
 model = genai.GenerativeModel(
-    model_name="gemini-3.1-pro-preview"
+    model_name="gemini-3.1-pro-preview",
     system_instruction=SYSTEM_PROMPT
+
 )
 
 # =========================
