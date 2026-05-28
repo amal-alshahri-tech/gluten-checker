@@ -102,7 +102,7 @@ OR
 """
 
 model = genai.GenerativeModel(
-    model_name="gemini-3-flash-preview",
+    model_name="gemini-2.5-flash",
     system_instruction=SYSTEM_PROMPT
 )
 
@@ -116,18 +116,5 @@ if uploaded_files:
 
     for file in uploaded_files:
         img = Image.open(file).convert("RGB")
-        img.thumbnail((1200, 1200))
+        img.thumbnail((1400, 1400))
         images.append(img)
-
-    for i, image in enumerate(images, start=1):
-        st.image(image, caption=f"Uploaded Image {i}", use_container_width=True)
-
-    with st.spinner("Analyzing product..."):
-        content = ["Analyze these product images together for celiac safety. حلل هذه الصور معًا لنفس المنتج لمريض سيلياك."]
-        content.extend(images)
-
-        response = model.generate_content(content)
-
-    st.markdown(response.text)
-
-
