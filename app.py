@@ -13,7 +13,7 @@ st.set_page_config(
 # Custom Title
 # =========================
 st.markdown(
-    "<h1 style='font-size:42px;'>🛡️ فاحص الغلوتين | Gluten Checker</h1>",
+    "<h1 style='font-size:36px;'>🛡️ فاحص الغلوتين | Gluten Checker</h1>",
     unsafe_allow_html=True
 )
 # =========================
