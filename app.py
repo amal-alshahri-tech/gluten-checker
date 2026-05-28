@@ -1,159 +1,292 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
+import io
+
 # =========================
-# Page Setup
+# إعداد الصفحة
 # =========================
 st.set_page_config(
     page_title="Gluten Checker",
     page_icon="🛡️",
     layout="centered"
 )
+
 # =========================
-# Custom Title
+# تنسيق CSS
 # =========================
-st.markdown(
-    "<h1 style='font-size:36px;'>🛡️ فاحص الغلوتين | Gluten Checker</h1>",
-    unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+
+html, body, [class*="css"] {
+    font-family: Arial, sans-serif;
+}
+
+/* العنوان الرئيسي */
+.main-title {
+    text-align: center;
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    color: #2b2d42;
+}
+
+/* صندوق التنبيه */
+.warning-box {
+    background-color: #f4f1d6;
+    padding: 20px;
+    border-radius: 12px;
+    line-height: 1.9;
+    font-size: 18px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+/* النص التعريفي */
+.description-box {
+    text-align: center;
+    line-height: 1.9;
+    font-size: 20px;
+    margin-bottom: 35px;
+}
+
+/* العناوين الفرعية */
+.section-title {
+    font-size: 34px;
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: #2b2d42;
+}
+
+/* النص العربي */
+.arabic-text {
+    direction: rtl;
+    text-align: right;
+    line-height: 2;
+    font-size: 20px;
+}
+
+/* النص الإنجليزي */
+.english-text {
+    direction: ltr;
+    text-align: left;
+    line-height: 1.8;
+    font-size: 18px;
+}
+
+hr {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # =========================
-# Warning Message
+# العنوان
 # =========================
-st.warning("""
+st.markdown("""
+<div class="main-title">
+🛡️ فاحص الغلوتين <br>
+Gluten Checker
+</div>
+""", unsafe_allow_html=True)
+
+# =========================
+# تنبيه
+# =========================
+st.markdown("""
+<div class="warning-box arabic-text">
 ⚠️ هذا البرنامج أداة مساعدة تعتمد على الذكاء الاصطناعي وقد يخطئ أحيانًا.
-يتحمل المستخدم مسؤولية القرار النهائي ويُنصح دائمًا بمراجعة الملصق الغذائي الرسمي والتواصل مع الشركة المصنعة عند وجود شك.
+يتحمّل المستخدم مسؤولية القرار النهائي وينصح دائمًا بمراجعة الملصق الغذائي الرسمي والتواصل مع الشركة المصنّعة عند وجود شك.
+<br><br>
+
+<div class="english-text">
 ⚠️ This tool is AI-assisted and may occasionally make mistakes.
 Users are responsible for final decisions and should always verify official product labels and contact manufacturers when uncertain.
-""")
+</div>
+</div>
+""", unsafe_allow_html=True)
+
 # =========================
-# Description
+# وصف التطبيق
 # =========================
-st.write("""
+st.markdown("""
+<div class="description-box arabic-text">
 قم برفع صور المنتج الغذائي من جميع الجهات لتحليل سلامته لمرضى السيلياك والغلوتين.
+<br><br>
+
+<div class="english-text">
 Upload food product images from all sides to analyze gluten safety for celiac patients.
-""")
-st.divider()
+</div>
+</div>
+""", unsafe_allow_html=True)
+
 # =========================
 # API KEY
 # =========================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
 # =========================
 # SYSTEM PROMPT
 # =========================
 SYSTEM_PROMPT = """
-أنت أخصائي تغذية سريرية وخبير في مرض السيلياك وتحليل المنتجات الغذائية عالميًا.
-قم بتحليل صور المنتجات الغذائية بعناية لتحديد سلامتها لمرضى السيلياك والغلوتين.
-حلل جميع الصور المرفوعة معًا على أنها لنفس المنتج.
-لا تفترض الأمان عند وجود شك.
+أنت خبير تغذية متخصص في تحليل المنتجات الغذائية لمرضى السيلياك وحساسية الغلوتين.
+
+قم بتحليل جميع الصور لنفس المنتج الغذائي.
+
 ركز على:
 - المكونات
-- تحذيرات الحساسية
-- شعارات خالي من الغلوتين
-- أرقام E
-- النشا المعدل
-- النكهات
-- مصادر الغلوتين المخفية
+- التحذيرات
+- الشعارات
 - احتمالية التلوث التبادلي
-التصنيفات النهائية:
-🟢 آمن تمامًا
-🟡 مكونات آمنة لكن غير معتمدة
-🟠 يحتاج حذر
-🔴 غير آمن / يحتوي على غلوتين
-قواعد مهمة:
-- يحتوي على قمح = غير آمن
-- قد يحتوي على آثار قمح = غير آمن
-- E1400 إلى E1451 = نشا معدل، إذا لم يُذكر المصدر فهو غير آمن
-- E636 و E637 مشتقة من الشعير
-- Wheat Free لا يعني Gluten Free
-- Oat Free لا يعني Gluten Free
-- لا تعتمد على الشعار وحده إذا كانت المكونات متعارضة
-اكتب النتيجة بالعربية كاملة أولًا.
-ثم الإنجليزية بعدها كاملة.
-استخدم خطوط فاصلة بين الأقسام.
+- أرقام E
+
+إذا لم تكن متأكدًا اذكر ذلك بوضوح.
+
+اكتب النتيجة بهذا التنسيق فقط:
+
+<hr>
+
+<div dir="rtl" style="text-align:right; line-height:2; font-size:20px;">
+
+<h2>التحليل باللغة العربية</h2>
+
+<h3>📊 الحالة</h3>
+<p>...</p>
+
+<hr>
+
+<h3>📋 الأسباب</h3>
+<p>...</p>
+
+<hr>
+
+<h3>🏷️ تحليل الشعارات</h3>
+<p>...</p>
+
+<hr>
+
+<h3>🧪 معلومات الحساسية</h3>
+<p>...</p>
+
+<hr>
+
+<h3>💡 التوصية</h3>
+<p>...</p>
+
+<hr>
+
+<h3>⚠️ تنبيه مهم</h3>
+<p>هذا التحليل يعتمد على الذكاء الاصطناعي وقد يحتوي على أخطاء. يجب دائمًا مراجعة الملصق الرسمي والتواصل مع الشركة المصنّعة عند الشك.</p>
+
+</div>
+
+<hr>
+
+<div dir="ltr" style="text-align:left; line-height:1.8; font-size:18px;">
+
+<h2>English Analysis</h2>
+
+<h3>📊 Status</h3>
+<p>...</p>
+
+<hr>
+
+<h3>📋 Reasons</h3>
+<p>...</p>
+
+<hr>
+
+<h3>🏷️ Label Analysis</h3>
+<p>...</p>
+
+<hr>
+
+<h3>🧪 Allergen Info</h3>
+<p>...</p>
+
+<hr>
+
+<h3>💡 Recommendation</h3>
+<p>...</p>
+
+<hr>
+
+<h3>⚠️ Important Notice</h3>
+<p>This analysis is AI-assisted and may contain mistakes. Always verify official labels and contact the manufacturer when uncertain.</p>
+
+</div>
+
+مهم جدًا:
+- لا تخلط العربي والإنجليزي داخل نفس الجملة.
+- اجعل العربي كامل أولًا ثم الإنجليزي كامل بعده.
+- لا تستخدم جداول.
+- اجعل التنسيق واضحًا ومرتبًا.
 """
+
 # =========================
-# MODEL
+# اختيار الموديل
 # =========================
 model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
+    model_name="gemini-1.5-pro",
     system_instruction=SYSTEM_PROMPT
 )
+
 # =========================
-# Upload Images
+# رفع الصور
 # =========================
 uploaded_files = st.file_uploader(
     "📸 ارفع صور المنتج | Upload product images",
     type=["jpg", "jpeg", "png"],
     accept_multiple_files=True
 )
+
 # =========================
-# Analyze Images
+# تصغير الصور لتقليل الاستهلاك
+# =========================
+def optimize_image(image):
+    max_size = (1200, 1200)
+
+    image.thumbnail(max_size)
+
+    buffer = io.BytesIO()
+
+    image.save(buffer, format="JPEG", quality=75)
+
+    buffer.seek(0)
+
+    return Image.open(buffer)
+
+# =========================
+# التحليل
 # =========================
 if uploaded_files:
+
     images = []
+
     for file in uploaded_files:
         img = Image.open(file).convert("RGB")
-        # Resize image
-        img.thumbnail((1400, 1400))
-        images.append(img)
-    # Show uploaded images
+        optimized = optimize_image(img)
+        images.append(optimized)
+
     for i, image in enumerate(images, start=1):
         st.image(
             image,
-            caption=f"الصورة {i}",
+            caption=f"Uploaded Image {i}",
             use_container_width=True
         )
-    st.divider()
-    # Analyze Button
-    if st.button("🔍 تحليل المنتج | Analyze Product"):
-        try:
-            with st.spinner("جاري تحليل المنتج... | Analyzing product..."):
-                content = [
-                    """
-حلل هذه الصور معًا لنفس المنتج الغذائي.
-اكتب النتيجة بالعربية كاملة أولًا ثم الإنجليزية بعدها.
-استخدم هذا التنسيق:
----
-# التحليل باللغة العربية
----
-## 📊 الحالة
-## 📋 الأسباب
----
-## 🏷️ تحليل الشعارات
----
-## 🧪 معلومات الحساسية
----
-## 💡 التوصية
----
-# English Analysis
----
-## 📊 Status
-## 📋 Reasons
----
-## 🏷️ Label Analysis
----
-## 🧪 Allergen Info
----
-## 💡 Recommendation
-"""
-                ]
-                content.extend(images)
-                response = model.generate_content(content)
-            st.success("✅ تم التحليل بنجاح | Analysis Completed")
-            st.markdown(response.text)
-        except Exception as e:
-            st.error("""
-❌ حدث خطأ أثناء التحليل.
-قد يكون السبب:
-- ضغط مؤقت على الخدمة
-- انتهاء الحد المجاني
-- صور كثيرة أو كبيرة جدًا
-يرجى المحاولة لاحقًا.
----
-❌ Analysis Error
-Possible reasons:
-- Temporary server overload
-- Free quota exceeded
-- Too many or very large images
-Please try again later.
-""")
+
+    with st.spinner("جاري تحليل المنتج... | Analyzing product..."):
+
+        content = [
+            "حلل هذه الصور لنفس المنتج الغذائي وحدد مدى أمانه لمرضى السيلياك والغلوتين."
+        ]
+
+        content.extend(images)
+
+        response = model.generate_content(content)
+
+    st.markdown(response.text, unsafe_allow_html=True)
