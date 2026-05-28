@@ -346,8 +346,7 @@ if uploaded_files:
 
             st.markdown(result, unsafe_allow_html=True)
 
-        except Exception:
-
-            st.error(
-                "حدث خطأ مؤقت أثناء التحليل. حاول مرة أخرى لاحقًا. | Temporary analysis error. Please try again later."
-            )
+       except Exception as e:
+    st.error("حدث خطأ مؤقت أثناء التحليل. حاول مرة أخرى لاحقًا. | Temporary analysis error. Please try again later.")
+    st.code(str(e))
+        
