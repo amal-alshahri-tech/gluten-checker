@@ -2,45 +2,59 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# =========================
-# إعداد الصفحة
-# =========================
+=========================
+
+Page Setup
+
+=========================
 
 st.set_page_config(
-    page_title="Gluten Checker",
-    page_icon="🛡️",
-    layout="centered"
+page_title=“Gluten Checker”,
+page_icon=“🛡️”,
+layout=“centered”
 )
 
-# =========================
-# العنوان
-# =========================
+=========================
 
-st.title("🛡️ Gluten Checker | فاحص الغلوتين")
+Title
 
-st.markdown("""
-### ⚠️ تنبيه مهم | Important Disclaimer
+=========================
 
-هذا البرنامج أداة مساعدة تعتمد على الذكاء الاصطناعي وقد يخطئ أحيانًا.  
+st.title(“🛡️ فاحص الغلوتين | Gluten Checker”)
+
+st.warning(”””
+⚠️ هذا البرنامج أداة مساعدة تعتمد على الذكاء الاصطناعي وقد يخطئ أحيانًا.
+
 يتحمل المستخدم مسؤولية القرار النهائي ويُنصح دائمًا بمراجعة الملصق الغذائي الرسمي والتواصل مع الشركة المصنعة عند وجود شك.
 
-This tool is AI-assisted and may occasionally make mistakes.  
-Users are responsible for final decisions and should always verify official labels and contact manufacturers when uncertain.
-""")
+⚠️ This tool is AI-assisted and may occasionally make mistakes.
+
+Users are responsible for final decisions and should always verify official product labels and contact manufacturers when uncertain.
+“””)
+
+st.write(”””
+قم برفع صور المنتج الغذائي من جميع الجهات لتحليل سلامته لمرضى السيلياك والغلوتين.
+
+Upload food product images from all sides to analyze gluten safety for celiac patients.
+“””)
 
 st.divider()
 
-# =========================
-# API KEY
-# =========================
+=========================
 
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+API KEY
 
-# =========================
-# التعليمات الخاصة بالموديل
-# =========================
+=========================
 
-SYSTEM_PROMPT = """
+genai.configure(api_key=st.secrets[“GEMINI_API_KEY”])
+
+=========================
+
+SYSTEM PROMPT
+
+=========================
+
+SYSTEM_PROMPT = “””
 أنت أخصائي تغذية سريرية وخبير في مرض السيلياك وتحليل المنتجات الغذائية عالميًا.
 
 قم بتحليل صور المنتجات الغذائية بعناية لتحديد سلامتها لمرضى السيلياك والغلوتين.
@@ -50,14 +64,15 @@ SYSTEM_PROMPT = """
 لا تفترض الأمان عند وجود شك.
 
 ركز على:
-- المكونات
-- تحذيرات الحساسية
-- شعارات خالي من الغلوتين
-- أرقام E
-- النشا المعدل
-- النكهات
-- مصادر الغلوتين المخفية
-- احتمالية التلوث التبادلي
+
+* المكونات
+* تحذيرات الحساسية
+* شعارات خالي من الغلوتين
+* أرقام E
+* النشا المعدل
+* النكهات
+* مصادر الغلوتين المخفية
+* احتمالية التلوث التبادلي
 
 نظام التصنيف النهائي:
 
@@ -69,195 +84,142 @@ SYSTEM_PROMPT = """
 
 🔴 غير آمن / يحتوي على غلوتين | Unsafe / Contains Gluten
 
+قواعد مهمة:
 
-يجب كتابة النتيجة بالعربية أولًا كاملة.
+* يحتوي على قمح = غير آمن
+* قد يحتوي على آثار قمح = غير آمن
+* E1400 إلى E1451 = نشا معدل، إذا لم يُذكر المصدر فهو غير آمن
+* E636 و E637 مشتقة من الشعير
+* Wheat Free لا يعني Gluten Free
+* Oat Free لا يعني Gluten Free
+* لا تعتمد على الشعار وحده إذا كانت المكونات متعارضة
+
+اكتب النتيجة بالعربية أولًا كاملة.
 ثم الإنجليزية بعدها كاملة.
 
-مهم جدًا:
-- لا تستخدم أعلام الدول.
-- أضف خط فاصل واضح بين كل قسم.
-- اجعل التنسيق مرتبًا وسهل القراءة.
-- لا تجعل العناوين ملتصقة بالنص.
-- استخدم Markdown بشكل منظم.
+استخدم تنسيقًا مرتبًا وواضحًا مع خطوط فاصلة بين الأقسام.
 
-استخدم هذا التنسيق حرفيًا:
+“””
 
----
+=========================
 
-# التحليل باللغة العربية
+MODEL
 
----
-
-## 📊 الحالة
-
-[اكتب التصنيف النهائي بالعربية]
-
----
-
-## 📋 الأسباب
-
-- شرح عربي مرتب وواضح
-- نقاط مختصرة ومنظمة
-
----
-
-## 🏷️ تحليل الشعارات
-
-- شرح الشعارات الظاهرة
-- توضيح أهميتها
-
----
-
-## 🧪 معلومات الحساسية
-
-- شرح تحذيرات الحساسية
-- هل يوجد قمح أو آثار غلوتين
-
----
-
-## 💡 التوصية
-
-- توصية واضحة ومباشرة
-
----
-
-## ⚠️ تنبيه مهم
-
-هذا البرنامج أداة مساعدة تعتمد على الذكاء الاصطناعي وقد يخطئ أحيانًا.
-يتحمل المستخدم مسؤولية القرار النهائي ويُنصح دائمًا بمراجعة الملصق الغذائي الرسمي والتواصل مع الشركة المصنعة عند وجود شك.
-
----
-
-# English Analysis
-
----
-
-## 📊 Status
-
-[Final classification in English]
-
----
-
-## 📋 Reasons
-
-- Clear organized explanation
-- Short readable points
-
----
-
-## 🏷️ Label Analysis
-
-- Explain labels found
-- Explain their importance
-
----
-
-## 🧪 Allergen Info
-
-- Explain allergen warnings
-- Mention wheat/gluten risk
-
----
-
-## 💡 Recommendation
-
-- Clear recommendation
-
----
-
-## ⚠️ Important Disclaimer
-
-This tool is AI-assisted and may occasionally make mistakes.
-Users are responsible for final decisions and should always verify official labels and contact manufacturers when uncertain.
-"""
-
-# =========================
-# اختيار الموديل
-# =========================
+=========================
 
 model = genai.GenerativeModel(
-    model_name="gemini-3.1-pro-preview",
-    system_instruction=SYSTEM_PROMPT
-
+model_name=“gemini-2.5-flash”,
+system_instruction=SYSTEM_PROMPT
 )
 
-# =========================
-# رفع الصور
-# =========================
+=========================
+
+Upload Images
+
+=========================
 
 uploaded_files = st.file_uploader(
-    "📸 قم برفع صور المنتج من جميع الجهات | Upload product images from all sides",
-    type=["jpg", "jpeg", "png"],
-    accept_multiple_files=True
+“📸 ارفع صور المنتج | Upload product images”,
+type=[“jpg”, “jpeg”, “png”],
+accept_multiple_files=True
 )
 
-# =========================
-# تحليل الصور
-# =========================
+=========================
+
+Analyze Images
+
+=========================
 
 if uploaded_files:
 
-    images = [Image.open(file) for file in uploaded_files]
-
-    # عرض الصور
-    for i, image in enumerate(images, start=1):
-        st.image(
-            image,
-            caption=f"Uploaded Image {i}",
-            use_container_width=True
-        )
-
-    st.divider()
-
-    # تقليل عدد الصور لتقليل الضغط على API
-    images = images[:4]
-
-    # تصغير الصور لتقليل الاستهلاك
-    resized_images = []
-
-    for image in images:
-        img = image.copy()
-        img.thumbnail((1200, 1200))
-        resized_images.append(img)
-
+images = []
+for file in uploaded_files:
+    img = Image.open(file).convert("RGB")
+    # Resize image to reduce API load
+    img.thumbnail((1400, 1400))
+    images.append(img)
+# Show uploaded images
+for i, image in enumerate(images, start=1):
+    st.image(
+        image,
+        caption=f"الصورة {i} | Uploaded Image {i}",
+        use_container_width=True
+    )
+st.divider()
+# Analyze Button
+if st.button("🔍 تحليل المنتج | Analyze Product"):
     try:
-
-        with st.spinner("🔍 جاري تحليل المنتج... | Analyzing product..."):
-
+        with st.spinner("جاري تحليل المنتج... | Analyzing product..."):
             content = [
-                "حلل هذه الصور معًا لنفس المنتج الغذائي الخاص بمرضى السيلياك والغلوتين. Write Arabic first then English."
-            ]
+                """
 
-            content.extend(resized_images)
+حلل هذه الصور معًا لنفس المنتج الغذائي.
 
+اكتب النتيجة بالعربية كاملة أولًا ثم الإنجليزية بعدها.
+
+استخدم هذا التنسيق:
+
+⸻
+
+التحليل باللغة العربية
+
+⸻
+
+📊 الحالة
+
+📋 الأسباب
+
+🏷️ تحليل الشعارات
+
+🧪 معلومات الحساسية
+
+💡 التوصية
+
+⸻
+
+English Analysis
+
+⸻
+
+📊 Status
+
+📋 Reasons
+
+🏷️ Label Analysis
+
+🧪 Allergen Info
+
+💡 Recommendation
+
+“””
+]
+
+            content.extend(images)
             response = model.generate_content(content)
-
         st.success("✅ تم التحليل بنجاح | Analysis Completed")
-
         st.markdown(response.text)
-
     except Exception as e:
-
         st.error("""
+
 ❌ حدث خطأ أثناء التحليل.
 
 قد يكون السبب:
-- عدد كبير من الطلبات
-- صور كبيرة جدًا
-- ضغط مؤقت على الخدمة
 
-يرجى المحاولة مرة أخرى بعد قليل.
+* ضغط مؤقت على الخدمة
+* انتهاء الحد المجاني
+* صور كثيرة أو كبيرة جدًا
 
----
+يرجى المحاولة لاحقًا.
+
+⸻
 
 ❌ Analysis Error
 
 Possible reasons:
-- Too many requests
-- Images are too large
-- Temporary server overload
+
+* Temporary server overload
+* Free quota exceeded
+* Too many or very large images
 
 Please try again later.
-""")
-
-        st.code(str(e))
+“””)
