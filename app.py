@@ -4,7 +4,7 @@ from PIL import Image
 
 st.set_page_config(
     page_title="Gluten Checker | فاحص الغلوتين",
-    page_icon="🛡️"
+    page_icon="🛡️" 
 )
 
 st.title("🛡️ Gluten Checker | فاحص الغلوتين")
