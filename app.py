@@ -102,7 +102,7 @@ OR
 """
 
 model = genai.GenerativeModel(
-    model_name="gemini-3.1-pro-preview",
+    model_name="gemini-3-flash-preview",
     system_instruction=SYSTEM_PROMPT
 )
 
@@ -111,9 +111,13 @@ uploaded_files = st.file_uploader(
     type=["jpg", "jpeg", "png"],
     accept_multiple_files=True
 )
-
 if uploaded_files:
-    images = [Image.open(file) for file in uploaded_files]
+    images = []
+
+    for file in uploaded_files:
+        img = Image.open(file).convert("RGB")
+        img.thumbnail((1200, 1200))
+        images.append(img)
 
     for i, image in enumerate(images, start=1):
         st.image(image, caption=f"Uploaded Image {i}", use_container_width=True)
@@ -125,3 +129,5 @@ if uploaded_files:
         response = model.generate_content(content)
 
     st.markdown(response.text)
+
+
