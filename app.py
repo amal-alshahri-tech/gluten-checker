@@ -10,15 +10,24 @@ st.set_page_config(
     layout="centered"
 )
 # =========================
-# Title
+# Custom Title
 # =========================
-st.title("🛡️ فاحص الغلوتين | Gluten Checker")
+st.markdown(
+    "<h1 style='font-size:42px;'>🛡️ فاحص الغلوتين | Gluten Checker</h1>",
+    unsafe_allow_html=True
+)
+# =========================
+# Warning Message
+# =========================
 st.warning("""
 ⚠️ هذا البرنامج أداة مساعدة تعتمد على الذكاء الاصطناعي وقد يخطئ أحيانًا.
 يتحمل المستخدم مسؤولية القرار النهائي ويُنصح دائمًا بمراجعة الملصق الغذائي الرسمي والتواصل مع الشركة المصنعة عند وجود شك.
 ⚠️ This tool is AI-assisted and may occasionally make mistakes.
 Users are responsible for final decisions and should always verify official product labels and contact manufacturers when uncertain.
 """)
+# =========================
+# Description
+# =========================
 st.write("""
 قم برفع صور المنتج الغذائي من جميع الجهات لتحليل سلامته لمرضى السيلياك والغلوتين.
 Upload food product images from all sides to analyze gluten safety for celiac patients.
@@ -148,4 +157,3 @@ Possible reasons:
 - Too many or very large images
 Please try again later.
 """)
-           
