@@ -242,7 +242,6 @@ if uploaded_files:
 
 قد يكون السبب:
 - عدد كبير من الطلبات
-- انتهاء الحد المجاني لـ Gemini
 - صور كبيرة جدًا
 - ضغط مؤقت على الخدمة
 
@@ -254,7 +253,6 @@ if uploaded_files:
 
 Possible reasons:
 - Too many requests
-- Gemini free quota exceeded
 - Images are too large
 - Temporary server overload
 
