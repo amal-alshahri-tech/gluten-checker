@@ -295,9 +295,8 @@ if uploaded_files:
             result = response.text
 
             result = result.replace(
-                "STATUS_INGREDIENTS_SAFE",
-                "<span style='color:#65a30d; font-size:28px; font-weight:bold;'>🟡 مكونات آمنة لكن غير معتمدة | Ingredients Safe But Not Certified</span>"
-            )
+    "STATUS_INGREDIENTS_SAFE",
+    "<span style='color:#eab308; font-size:28px; font-weight:bold;'>🟡 مكونات آمنة لكن غير معتمدة | Ingredients Safe But Not Certified</span>"
 
             result = result.replace(
                 "STATUS_SAFE",
